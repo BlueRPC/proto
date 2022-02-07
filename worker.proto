@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package worker;
+
+option java_multiple_files = true;
+option java_package = "com.drosocode.bluerpc.worker";
+option java_outer_classname = "WorkerProto";
+option go_package = "github.com/BlueRPC/server/pkg/worker";
+
+service Worker {
+    rpc Scan(DeviceScan) returns (ScanResults) {}
+    rpc Connect(Device) returns (StatusMessage) {}
+    rpc Disconnect(Device) returns (StatusMessage) {}
+
+    rpc ListBLEServices(Device) returns (ListBLEServicesResult) {}
+    rpc ListBLECharactersistic(Device) returns (ListBLECharactersisticsResult) {}
+    rpc ListBLEDescriptors(Device) returns (ListBLEDescriptorsResult) {}
+    rpc ReadBLEDescriptor(Device) returns (ReadDevice) {}
+    rpc WriteBLEDescriptor(WriteDevice) returns (StatusMessage) {}
+
+    rpc Subscribe(Device) returns (StatusMessage) {} // subscribe to characteristic with notification
+    rpc Unsubscribe(Device) returns (StatusMessage) {}
+    rpc ReceiveNotifications(None) returns (stream ReadDevice) {}
+
+    rpc ReceiveBroadcasted(None) returns (stream ReadDevice)  {} // get broadcasted data
+}
+
+message WriteDevice {
+    Device device = 1;
+    bytes data = 2;
+}
+
+message ReadDevice {
+    Status status = 1;
+    Device device = 2;
+    bytes data = 3;
+}
+
+message DeviceScan {
+    DeviceType type = 1;
+}
+
+message StatusMessage {
+    Status status = 1;
+}
+
+message BLEService {
+    string uuid = 1;
+}
+
+message ListBLEServicesResult {
+    Status status = 1;
+    repeated BLEService data = 2;
+}
+
+message ListBLECharactersisticsResult {
+    Status status = 1;
+    repeated BLECharacteristic data = 2;
+}
+
+message ListBLEDescriptorsResult {
+    Status status = 1;
+    repeated BLEDescriptor data = 2;
+}
+
+message ScanResults {
+    Status status = 1;
+    repeated ScanResult data = 2;
+}
+
+message ScanResult {
+    DeviceType device = 1;
+    string name = 2;
+    float rssi = 3;
+    bool connected = 4; // if the device is currently connected
+}
+
+message None{}
+
+message Device {
+    string mac = 1;
+    DeviceType type = 2;
+    BLESettings ble = 3;
+}
+
+message BLESettings {
+    BLEService service = 1;
+    BLECharacteristic characteristic = 2;
+    BLEDescriptor descriptor = 3;
+}
+
+message BLECharacteristic {
+    string uuid = 1;
+    repeated CharacteristicProperty properties = 2;
+    string security = 3;
+    int64 descriptors = 4;
+}
+
+message BLEDescriptor {
+    string uuid = 1;
+}
+
+enum CharacteristicProperty {
+    READ_CHR = 0;
+    WRITE_CHR = 1;
+    NOTIFY_CHR = 2;
+}
+
+enum DeviceType {
+    BLE4 = 0; // bluetooth low energy device
+    BEACON = 1; // non connectable, normal bluetooth
+    BLS = 2; // bluetooth serial
+}
+
+enum Status {
+    OK = 0;
+    ERR_UNAVAILABLE = 1;
+    ERR_CONNECTION_FAILED = 2;
+    ERR_UNKNOWN_SERVICE = 3;
+    ERR_UNKNOWN_DESCRIPTOR = 4;
+}
