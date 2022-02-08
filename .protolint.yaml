@@ -17,7 +17,6 @@ lint:
       - MESSAGE_NAMES_UPPER_CAMEL_CASE
       - MAX_LINE_LENGTH
       - INDENT
-      - SERVICE_NAMES_END_WITH
       - FIELD_NAMES_EXCLUDE_PREPOSITIONS
       - MESSAGE_NAMES_EXCLUDE_PREPOSITIONS
       - FILE_NAMES_LOWER_SNAKE_CASE
@@ -41,6 +40,7 @@ lint:
     remove:
       - ENUM_FIELDS_HAVE_COMMENT
       - FIELDS_HAVE_COMMENT
+      - SERVICE_NAMES_END_WITH
 
   # Linter rules option.
   rules_option:
@@ -60,10 +60,6 @@ lint:
     # QUOTE_CONSISTENT rule option.
     quote_consistent:
       quote: double
-
-    # SERVICE_NAMES_END_WITH rule option.
-    service_names_end_with:
-      text: Service
 
     syntax_consistent:
       version: proto3

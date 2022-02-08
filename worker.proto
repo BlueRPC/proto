@@ -9,7 +9,7 @@ option java_outer_classname = "WorkerProto";
 option go_package = "github.com/BlueRPC/server/pkg/worker";
 
 // Bluetooth Classic service
-service BluetoothClassicService {
+service BluetoothClassic {
     // Start a device scan of duration "time"
     rpc Scan(DeviceScan) returns (ScanResult) {}
     // Enable background scanning with a reporting interval of "time"
@@ -17,7 +17,7 @@ service BluetoothClassicService {
 }
 
 // Bluetooth Low Energy
-service BluetoothLEService {
+service BluetoothLE {
     // Common bluetooth commands
 
     // Start a device scan of duration "time"
@@ -50,12 +50,10 @@ service BluetoothLEService {
 
     // global method to receive all the subscribed notifications
     rpc ReceiveNotifications(Empty) returns (stream BluetoothData) {}
-    // global method to receive all the broadcasted data
-    rpc ReceiveBroadcasted(Empty) returns (stream BluetoothData)  {}
 }
 
 // WorkerService 
-service WorkerService {
+service Worker {
     // information on the worker
     rpc WorkerInfo(Empty) returns (WorkerConfig) {}
 }
@@ -77,6 +75,8 @@ message StatusMessage {
 message DeviceScan {
     // scan timeout (for Scan) / interval (for ScanBackground)
     int64 time = 1; // in seconds
+    // Passive or Active scanning 
+    bool active = 2;
 }
 
 // results of a device scan
@@ -85,13 +85,14 @@ message ScanResult {
     repeated Device data = 2;
 }
 
-
 // Device representation
 message Device {
     string mac = 1;
     DeviceType type = 2;
     string name = 3;
     float rssi = 4;
+    float txpwr = 5;
+    map<int64, bytes> manufacturerData = 6; // scan data
 }
 
 // bluethooth data
@@ -106,7 +107,6 @@ message BluetoothData {
 
 
 // BLE data
-
 
 // BLE device representation
 message BLEDevice {
@@ -175,7 +175,10 @@ enum Status {
     ERR_UNAVAILABLE = 1;
     ERR_CONNECTION_FAILED = 2;
     ERR_UNKNOWN_SERVICE = 3;
-    ERR_UNKNOWN_DESCRIPTOR = 4;
+    ERR_UNKNOWN_CHARACTERISTIC = 4;
+    ERR_UNKNOWN_DESCRIPTOR = 5;
+    ERR_UNSUPPORTED = 6;
+    ERR_UNKNOWN = 7;
 }
 
 
