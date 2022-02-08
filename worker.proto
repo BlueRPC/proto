@@ -1,3 +1,4 @@
+// Worker GRPC definition
 syntax = "proto3";
 
 package worker;
@@ -7,89 +8,138 @@ option java_package = "com.drosocode.bluerpc.worker";
 option java_outer_classname = "WorkerProto";
 option go_package = "github.com/BlueRPC/server/pkg/worker";
 
-service Worker {
-    rpc Scan(DeviceScan) returns (ScanResults) {}
+// Bluetooth Classic service
+service BluetoothClassicService {
+    // Start a device scan of duration "time"
+    rpc Scan(DeviceScan) returns (ScanResult) {}
+    // Enable background scanning with a reporting interval of "time"
+    rpc ScanBackground(DeviceScan) returns (stream ScanResult) {}
+}
+
+// Bluetooth Low Energy
+service BluetoothLEService {
+    // Common bluetooth commands
+
+    // Start a device scan of duration "time"
+    rpc Scan(DeviceScan) returns (ScanResult) {}
+    // Enable background scanning with a reporting interval of "time"
+    rpc ScanBackground(DeviceScan) returns (stream ScanResult) {}
+    // Connect to a device
     rpc Connect(Device) returns (StatusMessage) {}
+    // Disconnect from a device
     rpc Disconnect(Device) returns (StatusMessage) {}
 
+    // Bluetooth Low Energy
+
+    // list services for a device
     rpc ListBLEServices(Device) returns (ListBLEServicesResult) {}
-    rpc ListBLECharactersistic(Device) returns (ListBLECharactersisticsResult) {}
+    // list characterisitcs for a service
+    rpc ListBLECharactersistics(Device) returns (ListBLECharactersisticsResult) {}
+    // list descriptors for a characteristic
     rpc ListBLEDescriptors(Device) returns (ListBLEDescriptorsResult) {}
-    rpc ReadBLEDescriptor(Device) returns (ReadDevice) {}
-    rpc WriteBLEDescriptor(WriteDevice) returns (StatusMessage) {}
+    
+    // read a descriptor
+    rpc ReadBLEDescriptor(Device) returns (BluetoothData) {}
+    // write a descriptor
+    rpc WriteBLEDescriptor(BluetoothData) returns (StatusMessage) {}
 
-    rpc Subscribe(Device) returns (StatusMessage) {} // subscribe to characteristic with notification
+    // subscribe to the notification emitted by a characteristic
+    rpc Subscribe(Device) returns (StatusMessage) {}
+    // unsubscribe from a characteristic's notifications
     rpc Unsubscribe(Device) returns (StatusMessage) {}
-    rpc ReceiveNotifications(Empty) returns (stream ReadDevice) {}
 
-    rpc ReceiveBroadcasted(Empty) returns (stream ReadDevice)  {} // get broadcasted data
+    // global method to receive all the subscribed notifications
+    rpc ReceiveNotifications(Empty) returns (stream BluetoothData) {}
+    // global method to receive all the broadcasted data
+    rpc ReceiveBroadcasted(Empty) returns (stream BluetoothData)  {}
 }
 
-message WriteDevice {
-    Device device = 1;
-    bytes data = 2;
+// WorkerService 
+service WorkerService {
+    // information on the worker
+    rpc WorkerInfo(Empty) returns (WorkerConfig) {}
 }
 
-message ReadDevice {
-    Status status = 1;
-    Device device = 2;
-    bytes data = 3;
-}
 
-message DeviceScan {
-    DeviceType type = 1;
-    int64 time = 2; // in seconds
-}
+// General data
 
+
+// empty message
+message Empty{}
+
+// message only with the status 
 message StatusMessage {
     Status status = 1;
 }
 
-message BLEService {
-    string uuid = 1;
+
+// device scan configuration
+message DeviceScan {
+    // scan timeout (for Scan) / interval (for ScanBackground)
+    int64 time = 1; // in seconds
 }
 
+// results of a device scan
+message ScanResult {
+    Status status = 1;
+    repeated Device data = 2;
+}
+
+
+// Device representation
+message Device {
+    string mac = 1;
+    DeviceType type = 2;
+    string name = 3;
+    float rssi = 4;
+}
+
+// bluethooth data
+message BluetoothData {
+    // status (read/write success)
+    Status status = 1;
+    // device info (at least mac addr)
+    Device device = 2;
+    // payload of the message
+    bytes data = 3;
+}
+
+
+// BLE data
+
+
+// BLE device representation
+message BLEDevice {
+    Device device = 1;
+    BLEService service = 2;
+    BLECharacteristic characteristic = 3;
+    BLEDescriptor descriptor = 4;
+}
+
+// BLE services list
 message ListBLEServicesResult {
     Status status = 1;
     repeated BLEService data = 2;
 }
 
+// BLE characteristics list
 message ListBLECharactersisticsResult {
     Status status = 1;
     repeated BLECharacteristic data = 2;
 }
 
+// BLE descriptors list
 message ListBLEDescriptorsResult {
     Status status = 1;
     repeated BLEDescriptor data = 2;
 }
 
-message ScanResults {
-    Status status = 1;
-    repeated ScanResult data = 2;
+// BLE Service representation
+message BLEService {
+    string uuid = 1;
 }
 
-message ScanResult {
-    Device device = 1;
-    string name = 2;
-    float rssi = 3;
-    bool connected = 4; // if the device is currently connected
-}
-
-message Empty{}
-
-message Device {
-    string mac = 1;
-    DeviceType type = 2;
-    BLESettings ble = 3;
-}
-
-message BLESettings {
-    BLEService service = 1;
-    BLECharacteristic characteristic = 2;
-    BLEDescriptor descriptor = 3;
-}
-
+// BLE Characteristic representation
 message BLECharacteristic {
     string uuid = 1;
     repeated CharacteristicProperty properties = 2;
@@ -97,26 +147,46 @@ message BLECharacteristic {
     int64 descriptors = 4;
 }
 
+// BLE Descriptor representation
 message BLEDescriptor {
     string uuid = 1;
 }
 
+
+// Enums
+
+
+// BLE possible characteristics
 enum CharacteristicProperty {
     READ_CHR = 0;
     WRITE_CHR = 1;
     NOTIFY_CHR = 2;
 }
 
+// Bluetooth device type
 enum DeviceType {
-    BLE4 = 0; // bluetooth low energy device
-    BEACON = 1; // non connectable, normal bluetooth
-    BLS = 2; // bluetooth serial
+    CLASSIC = 0; // bluetooth classic
+    BLE4 = 1; // bluetooth low energy device
 }
 
+// possible status messages
 enum Status {
     OK = 0;
     ERR_UNAVAILABLE = 1;
     ERR_CONNECTION_FAILED = 2;
     ERR_UNKNOWN_SERVICE = 3;
     ERR_UNKNOWN_DESCRIPTOR = 4;
+}
+
+
+// Worker
+
+// general configuration of the worker
+message WorkerConfig {
+    // uptime of the worker
+    int64 uptime = 1;
+    // maximum number of devices connected at the same time
+    int64 maxDevices = 2;
+    // supported devices types
+    repeated DeviceType supportedTypes = 3;
 }
