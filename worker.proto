@@ -24,6 +24,8 @@ service BluetoothLE {
     rpc Scan(DeviceScan) returns (ScanResult) {}
     // Enable background scanning with a reporting interval of "time"
     rpc ScanBackground(DeviceScan) returns (stream ScanResult) {}
+    // Stop background scanning
+    rpc ScanBackgroundStop(Empty) returns (StatusMessage) {}
     // Connect to a device
     rpc Connect(Device) returns (StatusMessage) {}
     // Disconnect from a device
@@ -93,6 +95,7 @@ message Device {
     float rssi = 4;
     float txpwr = 5;
     map<int64, bytes> manufacturerData = 6; // scan data
+    int64 time = 7; // timestamp of the discovery
 }
 
 // bluethooth data
