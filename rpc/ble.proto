@@ -1,0 +1,153 @@
+// Worker Bluetooth Low Energy definition
+syntax = "proto3";
+
+package rpc;
+option java_multiple_files = true;
+option java_package = "com.drosocode.bluerpc.rpc.worker";
+option java_outer_classname = "WorkerProto";
+option go_package = "github.com/BlueRPC/server/pkg/rpc/worker";
+
+import "rpc/common.proto";
+
+// Bluetooth Low Energy
+service BluetoothLE {
+  // Common bluetooth commands
+
+  // Start a device scan of duration "time"
+  rpc Scan(DeviceScan) returns (ScanResult);
+  // Enable background scanning with a reporting interval of "time"
+  rpc ScanBackground(DeviceScan) returns (stream ScanResult);
+  // Stop background scanning
+  rpc ScanBackgroundStop(Empty) returns (StatusMessage);
+  // Connect to a device
+  rpc Connect(Device) returns (StatusMessage);
+  // Disconnect from a device
+  rpc Disconnect(Device) returns (StatusMessage);
+
+  // Bluetooth Low Energy
+
+  // list services for a device
+  rpc ListBLEServices(ListBLEServicesResult) returns (ListBLEServicesResult);
+  // list characterisitcs for a service
+  rpc ListBLECharactersistics(ListBLECharactersisticsResult)
+      returns (ListBLECharactersisticsResult);
+  // list descriptors for a characteristic
+  rpc ListBLEDescriptors(ListBLEDescriptorsResult)
+      returns (ListBLEDescriptorsResult);
+
+  // read a descriptor
+  rpc ReadBLEDescriptor(BLEData) returns (BLEData);
+  // write a descriptor
+  rpc WriteBLEDescriptor(StatusMessage) returns (StatusMessage);
+
+  // subscribe to the notification emitted by a characteristic
+  rpc Subscribe(StatusMessage) returns (StatusMessage);
+  // unsubscribe from a characteristic's notifications
+  rpc Unsubscribe(StatusMessage) returns (StatusMessage);
+
+  // global method to receive all the subscribed notifications
+  rpc ReceiveNotifications(Empty) returns (stream BLEData);
+  // global method to receive disconnect notifications
+  rpc ReceiveDisconnect(Empty) returns (stream Device);
+
+  // execute all the actions defined for a transaction
+  rpc CommitTransaction(TransactionMessage) returns (StatusMessage);
+}
+
+// BLE data
+
+// notification message
+message BLENotification {
+  // device information
+  Device device = 1;
+  // ble device information
+  BLEDevice ble = 2;
+  // bluetooth data
+  BLEData data = 3;
+}
+
+// bluethooth LE data
+message BLEData {
+  // status (read/write success)
+  Status status = 1;
+  // device info (at least mac addr)
+  BLEDevice device = 2;
+  // payload of the message
+  bytes data = 3;
+}
+
+// BLE device representation
+message BLEDevice {
+  // service
+  BLEService service = 2;
+  // characteristic
+  BLECharacteristic characteristic = 3;
+  // descriptor
+  BLEDescriptor ble_descriptor = 4;
+}
+
+// BLE services list
+message ListBLEServicesResult {
+  // request status
+  Status status = 1;
+  // device information
+  Device device = 2;
+  // list of services
+  repeated BLEService data = 3;
+}
+
+// BLE characteristics list
+message ListBLECharactersisticsResult {
+  // request status
+  Status status = 1;
+  // device information
+  Device device = 2;
+  // list of characteristics
+  repeated BLECharacteristic data = 3;
+}
+
+// BLE descriptors list
+message ListBLEDescriptorsResult {
+  // request status
+  Status status = 1;
+  // device information
+  Device device = 2;
+  // list of descriptors
+  repeated BLEDescriptor data = 3;
+}
+
+// BLE Service representation
+message BLEService {
+  // service UUID
+  string uuid = 1;
+}
+
+// BLE Characteristic representation
+message BLECharacteristic {
+  // characteristic UUID
+  string uuid = 1;
+  // characteristic properties
+  repeated ChrProperty properties = 2;
+  // characteristic security
+  string security = 3;
+  // number of descriptors associated with this characteristic
+  int64 descriptors = 4;
+}
+
+// BLE Descriptor representation
+message BLEDescriptor {
+  // descriptor UUID
+  string uuid = 1;
+}
+
+// BLE possible characteristics
+enum ChrProperty {
+  // unknown characteristic
+  CHR_PROPERTY_UNK = 0;
+  // read property
+  CHR_PROPERTY_READ = 1;
+  // write property
+  CHR_PROPERTY_WRITE = 2;
+  // notify property
+  CHR_PROPERTY_NOTIFY = 3;
+}

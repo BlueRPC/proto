@@ -1,0 +1,102 @@
+// Worker Common types definition
+syntax = "proto3";
+
+package rpc;
+option java_multiple_files = true;
+option java_package = "com.drosocode.bluerpc.rpc.worker";
+option java_outer_classname = "CommonProto";
+option go_package = "github.com/BlueRPC/server/pkg/rpc/worker";
+
+// transaction definition
+message TransactionMessage {
+  // id of the transaction
+  int64 transaction_id = 1;
+}
+
+// empty message
+message Empty {
+}
+
+// message only with the status
+message StatusMessage {
+  // error status
+  Status status = 1;
+  // error description
+  string message = 2;
+}
+
+// device scan configuration
+message DeviceScan {
+  // scan timeout (for Scan) / interval (for ScanBackground)
+  int64 time = 1;  // in seconds
+  // Passive or Active scanning
+  bool active = 2;
+}
+
+// results of a device scan
+message ScanResult {
+  // status
+  Status status = 1;
+  // scan data
+  repeated ScanData data = 2;
+}
+
+// Device representation
+message Device {
+  // mac address
+  string mac = 1;
+  // device type
+  DeviceType type = 2;
+  // device name
+  string name = 3;
+}
+
+// Scan data
+message ScanData {
+  // device information
+  Device device = 1;
+  // RSSI
+  float rssi = 2;
+  // TX Power
+  float txpwr = 3;
+  // manufacturer data
+  map<int64, bytes> manufacturer_data = 4;  // scan data
+  // timestamp of the discovery
+  int64 time = 5;
+}
+
+// Enums
+
+// Bluetooth device type
+enum DeviceType {
+  // unknown device type
+  DEVICE_TYPE_UNK = 0;
+  // bluetooth classic
+  DEVICE_TYPE_CLASSIC = 1;
+  // bluetooth low energy (v4) device
+  DEVICE_TYPE_BLE4 = 2;
+}
+
+// possible status messages
+enum Status {
+  // not specified
+  STATUS_UNK = 0;
+  // OK
+  STATUS_OK = 1;
+  // an unknown error occured
+  STATUS_ERROR = 2;
+  // device not available / cannot be found
+  STATUS_UNAVAILABLE = 3;
+  // failed to connect to the device
+  STATUS_CONNECTION_FAILED = 4;
+  // the specified sevice is unknown
+  STATUS_UNKNOWN_SERVICE = 5;
+  // the specified characteristic is unknown
+  STATUS_UNKNOWN_CHARACTERISTIC = 6;
+  // the specified descriptor is unknown
+  STATUS_UNKNOWN_DESCRIPTOR = 7;
+  // the requested action is not supported
+  STATUS_UNSUPPORTED = 8;
+  // supplied connection settings are invalid
+  STATUS_INVALID_CONNECTION_SETTINGS = 9;
+}

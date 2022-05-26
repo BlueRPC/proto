@@ -1,0 +1,21 @@
+// Worker Bluetooth Classic definition
+syntax = "proto3";
+
+package rpc;
+
+option java_multiple_files = true;
+option java_package = "com.drosocode.bluerpc.rpc.worker";
+option java_outer_classname = "WorkerProto";
+option go_package = "github.com/BlueRPC/server/pkg/rpc/worker";
+
+import "rpc/common.proto";
+
+// Bluetooth Classic service
+service BluetoothClassic {
+  // Start a device scan of duration "time"
+  rpc Scan(DeviceScan) returns (ScanResult);
+  // Enable background scanning with a reporting interval of "time"
+  rpc ScanBackground(DeviceScan) returns (stream ScanResult);
+  // Stop background scanning
+  rpc ScanBackgroundStop(Empty) returns (StatusMessage);
+}

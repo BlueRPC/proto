@@ -1,0 +1,31 @@
+// Worker definition
+syntax = "proto3";
+
+package rpc;
+
+option java_multiple_files = true;
+option java_package = "com.drosocode.bluerpc.rpc.worker";
+option java_outer_classname = "WorkerProto";
+option go_package = "github.com/BlueRPC/server/pkg/rpc/worker";
+
+import "rpc/common.proto";
+
+// WorkerService
+service Worker {
+  // information on the worker
+  rpc WorkerInfo(Empty) returns (WorkerInfoResponse);
+}
+
+// Worker
+
+// general configuration of the worker
+message WorkerInfoResponse {
+  // uptime of the worker
+  int64 uptime = 1;
+  // maximum number of devices connected at the same time
+  int64 max_devices = 2;
+  // supported devices types
+  repeated DeviceType supported_types = 3;
+  // current amount of connected devices
+  int64 devices = 4;
+}
