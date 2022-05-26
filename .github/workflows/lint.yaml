@@ -1,16 +1,15 @@
-name: "lint protobuf"
+name: buf
 on: push
 
 jobs:
-  pr-check:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout source
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
-      - name: run protolint
-        uses: plexsystems/protolint-action@v0.4.0
+      - uses: bufbuild/buf-setup-action@v0.6.0
+      - uses: bufbuild/buf-lint-action@v1
+      - uses: bufbuild/buf-breaking-action@v1
         with:
-          configDirectory: .
+          against: "https://github.com/${GITHUB_REPOSITORY}.git#branch=main"
