@@ -3,9 +3,8 @@ syntax = "proto3";
 
 package rpc;
 option java_multiple_files = true;
-option java_package = "com.drosocode.bluerpc.rpc.worker";
-option java_outer_classname = "WorkerProto";
-option go_package = "github.com/BlueRPC/server/pkg/rpc/worker";
+option java_package = "com.bluerpc.rpc";
+option go_package = "github.com/BlueRPC/server/pkg/rpc";
 
 import "rpc/common.proto";
 
